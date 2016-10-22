@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Kanban Test</title>
+    <link rel="stylesheet" href="css/styles.css"/>
+    <script src="build/react.js"></script>
+    <script src="build/react-dom.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+  </head>
+  <body>
+
+    <script src="https://www.gstatic.com/firebasejs/3.5.1/firebase.js"></script>
+
+    <div id="kb-container"></div>
+    <form id="createForm" onSubmit="createBoard(event);">
+      <label>Create Board</label>
+      <input type="text" id="boardTitle"></input>
+      <button type="submit">Create</button>
+    </form>
+    <script>
+      // Initialize Firebase
+      var config = {
+        apiKey: "AIzaSyADnRizuyWWgbcC1XLlP2eZUYElSd77ngg",
+        authDomain: "kanban-7278c.firebaseapp.com",
+        databaseURL: "https://kanban-7278c.firebaseio.com",
+        storageBucket: "kanban-7278c.appspot.com",
+        messagingSenderId: "848443772357"
+      };
+      firebase.initializeApp(config);
+
+      function createBoard(e) {
+        console.log("createBoard");
+        e.preventDefault();
+        var title = document.getElementById("boardTitle").value;
+        var newBoard = firebase.database().ref('boards/').push();
+        var now = new Date().getTime();
+        newBoard.set({
+          title: title,
+          creationTime: now,
+          columns: {
+            c1: {
+              title: "Backlog",
+              maxItems: 0,
+              postits: [
+                {
+                  id: "p0",
+                  title: "First PostIt",
+                  message: "An example postIt",
+                  order: 0
+                }
+              ]
+            },
+            c2: {
+              title: "Doing",
+              maxItems: 5,
+              postits: [
+                {
+                  id: "p1",
+                  title: "First PostIt",
+                  message: "An example postIt",
+                  order: 0
+                },
+                {
+                  id: "p2",
+                  title: "Another PostIt",
+                  message: "An example postIt",
+                  order: 1
+                },
+              ]
+            },
+            c3: {
+              title: "Done",
+              maxItems: 0,
+              postits: []
+            }
+          }
+        });
+      }
+
+
+
+    </script>
+    <script type="text/babel">
+    //react
+    var PostIt = React.createClass({
+      render: function () {
+
+        return (
+          <div className="postit">
+            <h3>{this.props.data.title}</h3>
+            <p>{this.props.data.message}</p>
+          </div>
+        );
+      }
+    });
+    var KanbanColumn = React.createClass({
+      maxItemsString: function () {
+        return this.props.cdata.maxItems === 0 ? "" : " - (max.: " + this.props.cdata.maxItems + ")";
+      },
+      render: function () {
+        var items = [];
+        this.props.cdata.postits.forEach(function (item) {
+          items.push(<PostIt data={item} key={item.id}/>);
+        });
+        /*if(this.props.cdata.postits) {
+
+        }*/
+        return (
+          <div className="column"><h2>{this.props.cdata.title}{this.maxItemsString()}</h2>
+          {items}
+          </div>
+        );
+      }
+    });
+    var KanbanBoard = React.createClass({
+      render: function () {
+        return (
+          <div className="board-container">
+            <h1>{this.props.data.title}</h1>
+            <div className="board">
+              <KanbanColumn cdata={this.props.data.columns.c1}/>
+              <KanbanColumn cdata={this.props.data.columns.c2}/>
+              <KanbanColumn cdata={this.props.data.columns.c3}/>
+            </div>
+          </div>
+        );
+      }
+    });
+
+    var data = {
+      "columns" : {
+        "c1" : {
+          "maxItems" : 0,
+          "postits" : [ {
+            "id" : "p0",
+            "message" : "An example postIt",
+            "order" : 0,
+            "title" : "First PostIt"
+          } ],
+          "title" : "Backlog"
+        },
+        "c2" : {
+          "maxItems" : 5,
+          "postits" : [ {
+            "id" : "p1",
+            "message" : "An example postIt",
+            "order" : 0,
+            "title" : "First PostIt"
+          }, {
+            "id" : "p2",
+            "message" : "An example postIt",
+            "order" : 1,
+            "title" : "Another PostIt"
+          } ],
+          "title" : "Doing"
+        },
+        "c3" : {
+          "maxItems" : 0,
+          "title" : "Done",
+          "postits": []
+        }
+      },
+      "creationTime" : 1477149278903,
+      "title" : "ArraysInFirebase"
+    };
+    ReactDOM.render(
+      <KanbanBoard data={data}/>,
+      document.getElementById('kb-container')
+    );
+    </script>
+
+  </body>
+</html>
